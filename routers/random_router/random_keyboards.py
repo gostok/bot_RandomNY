@@ -5,7 +5,7 @@ from aiogram import types
 
 def message_random():
     kb_list = [
-        [InlineKeyboardButton(text="получить предсказание", callback_data="random_inline")]
+        [InlineKeyboardButton(text="Получить предсказание ✨", callback_data="random_inline")]
     ]
     kb = InlineKeyboardMarkup(inline_keyboard=kb_list, resize_keyboard=True)
     return kb

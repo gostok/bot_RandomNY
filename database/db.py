@@ -10,6 +10,8 @@ class UserDatabase:
     """Класс таблицы Юзеров в базе данных"""
     def __init__(self, db_name='database/users.db'):
         self.db_name = os.path.abspath(db_name)
+        self.connection = sqlite3.connect(db_name)
+        self.cursor = self.connection.cursor()
         self.create_table()
 
     def create_table(self):

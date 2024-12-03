@@ -22,7 +22,7 @@ class RegState(StatesGroup):
 @reg_router.callback_query(F.data.startswith("reg_inline"), StateFilter(RegState.user_id_state))
 async def reg_cmd(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer('Отправьте вашу дату рождения в формате ДД-ММ-ГГГГ...')
+    await callback.message.answer('Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
     await state.set_state(RegState.date_of_birth_state)
 
 
@@ -32,14 +32,14 @@ async def reg_dob_cmd(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     try:
         # Проверка формата даты
-        datetime.strptime(date_of_birth, '%d-%m-%Y')  # Проверяем, что дата в правильном формате
+        datetime.strptime(date_of_birth, '%d.%m.%Y')  # Проверяем, что дата в правильном формате
         db.add_user(user_id=user_id, birth_date=date_of_birth)
         await message.answer(f"Привет, @{message.from_user.username}.\n"
                              f"Я даю персональное новогоднее предсказание на каждый день при помощи мема.\n\n"
                              f"Начнем?", reply_markup=message_random())
         await state.clear()
     except ValueError:
-        await message.answer('Неверный формат даты. Пожалуйста, используйте формат ДД-ММ-ГГГГ.')
+        await message.answer('Неверный формат даты. Пожалуйста, используйте формат ДД.ММ.ГГГГ.')
     except Exception as e:
         await message.answer('Произошла ошибка при регистрации. Пожалуйста, попробуйте еще раз.')
         print(f"Ошибка при добавлении пользователя: {e}")

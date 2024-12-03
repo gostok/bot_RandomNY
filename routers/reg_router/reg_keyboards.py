@@ -5,7 +5,7 @@ from aiogram import types
 
 def reg_kb():
     kb_list = [
-        [InlineKeyboardButton(text='Зарегистрироваться', callback_data='reg_inline')]
+        [InlineKeyboardButton(text='Проверить подписку', callback_data='reg_inline')]
     ]
     kb = InlineKeyboardMarkup(inline_keyboard=kb_list, resize_keyboard=True)
     return kb

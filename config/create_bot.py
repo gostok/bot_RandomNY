@@ -11,6 +11,7 @@ load_dotenv()
 
 TOKEN = os.getenv('BOT_TOKEN')
 ADMIN = os.getenv('ADMIN')
+CHAT_ADMIN = os.getenv('CHAT_ADMIN')
 
 
 logging.basicConfig(
