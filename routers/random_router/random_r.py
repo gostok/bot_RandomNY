@@ -20,66 +20,62 @@ db = UserDatabase()
 
 IMAGES_DIR = 'database/images'
 
-async def send_random_image(user_id):
-    images = [img for img in os.listdir(IMAGES_DIR) if img.endswith(('.png', '.jpg', '.jpeg'))]
 
-    if not images:
-        print("Нет доступных изображений для отправки.")
-        return
-
-    random_image = random.choice(images)
-    image_path = os.path.join(IMAGES_DIR, random_image)
-
-    photo = FSInputFile(image_path)
-
-    await bot.send_photo(user_id, photo, caption='Новогоднее предсказание на сегодня')
-    return image_path
+async def send_saved_image(user_id, image_path):
+    if os.path.exists(image_path):
+        photo = FSInputFile(image_path)
+        await bot.send_photo(user_id, photo, caption='Ваш вайб на 2025 год')
+    else:
+        logging.warning(f"Изображение по пути {image_path} не найдено.")
 
 
-@random_router.callback_query(F.data.startswith('random_inline'), Command('meme'))
-async def random_handler(callback: types.CallbackQuery, state: FSMContext):
-    user_id = callback.from_user.id
+async def handle_meme_request(user_id, message):
     user = db.get_user(user_id)
-    await callback.answer()
 
     if user is not None:
         last_prediction = db.get_last_prediction(user_id=user_id)
-        today = datetime.now().date().isoformat()  # Получаем текущую дату в формате ISO
+        logging.info(f"Last prediction: {last_prediction}")
 
+        if last_prediction is None:
+            images = [img for img in os.listdir(IMAGES_DIR) if img.endswith(('.png', '.jpg', '.jpeg'))]
+            if not images:
+                logging.warning("Нет доступных изображений для отправки.")
+                return None
 
+            random_image = random.choice(images)
+            image_path = os.path.join(IMAGES_DIR, random_image)
 
-        if last_prediction is not None and last_prediction[1] == today:  # Проверяем, существует ли предсказание
-            if os.path.exists(last_prediction[0]):
-                photo = FSInputFile(last_prediction[0])  # Используем FSInputFile для локального файла
-                await bot.send_photo(user_id, photo, caption='Новогоднее предсказание на сегодня')
-            else:
-                logging.error(f"Файл не найден: {last_prediction[0]}")
+            # Отправляем сообщение о процессе
+            processing_messages = [
+                "Направляю запрос во Вселенную мемов 🌌",
+                "Устанавливаю связь с космосом 💫",
+                "Ожидаю расклад от главного мемолога 🥠",
+                "Загружаю мемологическую картотеку 🔮"
+            ]
+
+            for msg in processing_messages:
+                processing_message = await message.answer(msg)
+                await asyncio.sleep(1.5)
+                await bot.delete_message(user_id, message_id=processing_message.message_id)
+
+            await send_saved_image(user_id, image_path)
+            db.update_last_prediction(user_id, image_path)
         else:
-            # Отправляем сообщение о поиске предсказания
-            processing_message = await callback.message.answer("Направляю запрос во Вселенную мемов 🌌")
-            await asyncio.sleep(2)
-            await bot.delete_message(
-                user_id, message_id=processing_message.message_id
-            )
-            processing_message = await callback.message.answer("Устанавливаю связь с космосом 💫")
-            await asyncio.sleep(2)
-            await bot.delete_message(
-                user_id, message_id=processing_message.message_id
-            )
-            processing_message = await callback.message.answer("Ожидаю расклад от главного мемолога 🥠")
-            await asyncio.sleep(2)
-            await bot.delete_message(
-                user_id, message_id=processing_message.message_id
-            )
-            processing_message = await callback.message.answer("Загружаю мемологическую картотеку 🔮")
-            await asyncio.sleep(2)
-            await bot.delete_message(
-                user_id, message_id=processing_message.message_id
-            )
+            # Проверяем, если last_prediction - это кортеж
+            if isinstance(last_prediction, tuple):
+                last_prediction = last_prediction[0]  # Измените это в зависимости от структуры вашего кортежа
 
-            image_path = await send_random_image(user_id)  # Отправляем случайное изображение
-            if image_path:  # Проверяем, что изображение было успешно отправлено
-                db.update_last_prediction(user_id, image_path)  # Обновляем последнее предсказание
+            await send_saved_image(user_id, last_prediction)
     else:
         logging.info('Ошибка отправки рандом сообщения: пользователь не найден.')
 
+
+@random_router.message(Command('meme'))  # Обработчик для команды /meme
+async def meme_command_handler(message: types.Message):
+    await handle_meme_request(message.from_user.id, message)
+
+
+@random_router.callback_query(F.data.startswith("random_inline"))  # Обработчик для инлайн-кнопок
+async def meme_button_handler(callback: types.CallbackQuery):
+    await callback.answer()  # Подтверждаем нажатие кнопки
+    await handle_meme_request(callback.from_user.id, callback.message)

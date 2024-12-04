@@ -26,21 +26,17 @@ class RegState(StatesGroup):
 async def reg_cmd(callback: types.CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
     await callback.answer()
-    # try:
-    #     chat_member = await bot.get_chat_member(CHANNEL_USERNAME, user_id)
-    #
-    #     if chat_member.status in ['member', 'administrator', 'creator']:
-    #         await callback.message.answer(
-    #             'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
-    #         await state.set_state(RegState.date_of_birth_state)
-    #     else:
-    #         await callback.message.answer("Пожалуйста, подпишитесь на канал, чтобы продолжить.")
-    # except Exception as e:
-    #     await callback.message.answer("Не удалось проверить подписку. Убедитесь, что я имею доступ к каналу.")
-    await callback.message.answer(
-        'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
-    await state.set_state(RegState.date_of_birth_state)
+    try:
+        chat_member = await bot.get_chat_member(CHANNEL_USERNAME, user_id)
 
+        if chat_member.status in ['member', 'administrator', 'creator']:
+            await callback.message.answer(
+                'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
+            await state.set_state(RegState.date_of_birth_state)
+        else:
+            await callback.message.answer("Пожалуйста, подпишитесь на канал, чтобы продолжить.")
+    except Exception as e:
+        await callback.message.answer("Не удалось проверить подписку. Убедитесь, что я имею доступ к каналу.")
 
 
 @reg_router.message(StateFilter(RegState.date_of_birth_state))
@@ -51,9 +47,7 @@ async def reg_dob_cmd(message: types.Message, state: FSMContext):
         # Проверка формата даты
         datetime.strptime(date_of_birth, '%d.%m.%Y')  # Проверяем, что дата в правильном формате
         db.add_user(user_id=user_id, birth_date=date_of_birth)
-        await message.answer(f"Привет, @{message.from_user.username}.\n"
-                             f"Я даю персональное новогоднее предсказание на каждый день при помощи мема.\n\n"
-                             f"Начнем?", reply_markup=message_random())
+        await message.answer(f"Привет, @{message.from_user.username}.", reply_markup=message_random())
         await state.clear()
     except ValueError:
         await message.answer('Неверный формат даты. Пожалуйста, используйте формат ДД.ММ.ГГГГ.')
