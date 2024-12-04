@@ -6,6 +6,7 @@ from datetime import datetime
 from aiogram import Router, F, types
 from aiogram.types.input_file import FSInputFile
 from aiogram.fsm.context import FSMContext
+from aiogram.filters import CommandStart, Command
 
 from database.db import UserDatabase
 from config.create_bot import bot
@@ -35,7 +36,7 @@ async def send_random_image(user_id):
     return image_path
 
 
-@random_router.callback_query(F.data.startswith('random_inline'))
+@random_router.callback_query(F.data.startswith('random_inline'), Command('meme'))
 async def random_handler(callback: types.CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
     user = db.get_user(user_id)

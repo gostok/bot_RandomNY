@@ -6,10 +6,13 @@ from datetime import datetime
 
 from routers.random_router.random_keyboards import message_random
 from database.db import UserDatabase
+from config.create_bot import bot
 
 reg_router = Router()
 
 db = UserDatabase()
+
+CHANNEL_USERNAME = '@cityparkgrad'
 
 
 class RegState(StatesGroup):
@@ -21,9 +24,23 @@ class RegState(StatesGroup):
 
 @reg_router.callback_query(F.data.startswith("reg_inline"), StateFilter(RegState.user_id_state))
 async def reg_cmd(callback: types.CallbackQuery, state: FSMContext):
+    user_id = callback.from_user.id
     await callback.answer()
-    await callback.message.answer('Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
+    # try:
+    #     chat_member = await bot.get_chat_member(CHANNEL_USERNAME, user_id)
+    #
+    #     if chat_member.status in ['member', 'administrator', 'creator']:
+    #         await callback.message.answer(
+    #             'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
+    #         await state.set_state(RegState.date_of_birth_state)
+    #     else:
+    #         await callback.message.answer("Пожалуйста, подпишитесь на канал, чтобы продолжить.")
+    # except Exception as e:
+    #     await callback.message.answer("Не удалось проверить подписку. Убедитесь, что я имею доступ к каналу.")
+    await callback.message.answer(
+        'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
     await state.set_state(RegState.date_of_birth_state)
+
 
 
 @reg_router.message(StateFilter(RegState.date_of_birth_state))
