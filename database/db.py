@@ -33,7 +33,6 @@ class UserDatabase:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER NOT NULL,
                     image_path TEXT NOT NULL,
-                    prediction_date TEXT NOT NULL,
                     FOREIGN KEY (user_id) REFERENCES users (user_id)
                 )
                 '''
@@ -83,7 +82,7 @@ class UserDatabase:
             existing_prediction = cursor.fetchone()
 
             if not existing_prediction:
-                # Если предсказания нет, добавляем новое
+                # Если предсказания нет, добавляем новое без даты
                 cursor.execute('''
                     INSERT INTO predictions (user_id, image_path) VALUES (?, ?)
                 ''', (user_id, image_path))
@@ -94,12 +93,13 @@ class UserDatabase:
             conn.commit()
 
     def get_last_prediction(self, user_id):
-        """Получаем последнее предсказание и дату."""
+        """Получаем последнее предсказание."""
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT image_path, prediction_date FROM predictions WHERE user_id = ? ORDER BY id DESC LIMIT 1
+                SELECT image_path FROM predictions WHERE user_id = ? ORDER BY id DESC LIMIT 1
             ''', (user_id,))
             last_prediction = cursor.fetchone()
-            return last_prediction  # Возвращает кортеж (image_path, prediction_date) или None
+            return last_prediction  # Возвращает кортеж (image_path) или None
+
 

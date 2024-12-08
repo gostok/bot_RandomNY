@@ -22,11 +22,13 @@ IMAGES_DIR = 'database/images'
 
 
 async def send_saved_image(user_id, image_path):
+    logging.info(f"Переданный путь к изображению: {image_path}")  # Отладочное сообщение
     if os.path.exists(image_path):
         photo = FSInputFile(image_path)
         await bot.send_photo(user_id, photo, caption='Ваш вайб на 2025 год')
     else:
         logging.warning(f"Изображение по пути {image_path} не найдено.")
+
 
 
 async def handle_meme_request(user_id, message):
@@ -63,8 +65,10 @@ async def handle_meme_request(user_id, message):
             db.update_last_prediction(user_id, image_path)  # Обновляем предсказание только если его еще не было
             logging.info(f"Изображение сохранено для пользователя {user_id}: {image_path}")
         else:
+            # Извлекаем путь к изображению из кортежа
+            image_path = last_prediction[0]
             # Отправляем последнее предсказание
-            await send_saved_image(user_id, last_prediction)
+            await send_saved_image(user_id, image_path)
     else:
         logging.info('Ошибка отправки рандом сообщения: пользователь не найден.')
 
