@@ -72,35 +72,34 @@ class UserDatabase:
         return count[0] if count else 0
 
     def update_last_prediction(self, user_id, image_path):
-        """Обновляем путь к последнему предсказанию и дату."""
-        prediction_date = datetime.now().date().isoformat()
+        """Обновляем путь к предсказанию только если его еще не было у пользователя."""
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
-            # Проверяем, существует ли уже предсказание для пользователя на сегодня
+
+            # Проверяем, существует ли уже предсказание для пользователя
             cursor.execute('''
-                SELECT * FROM predictions WHERE user_id = ? AND prediction_date = ?
-            ''', (user_id, prediction_date))
+                SELECT * FROM predictions WHERE user_id = ?
+            ''', (user_id,))
             existing_prediction = cursor.fetchone()
 
-            if existing_prediction:
-                # Если предсказание уже существует, обновляем его
-                cursor.execute('''
-                    UPDATE predictions SET image_path = ? WHERE user_id = ? AND prediction_date = ?
-                ''', (image_path, user_id, prediction_date))
-            else:
+            if not existing_prediction:
                 # Если предсказания нет, добавляем новое
                 cursor.execute('''
-                    INSERT INTO predictions (user_id, image_path, prediction_date) VALUES (?, ?, ?)
-                ''', (user_id, image_path, prediction_date))
+                    INSERT INTO predictions (user_id, image_path) VALUES (?, ?)
+                ''', (user_id, image_path))
+                logger.info(f"Добавлено новое предсказание для {user_id}: {image_path}")
+            else:
+                logger.info(f"Предсказание уже существует для {user_id}: {existing_prediction[1]}")
+
             conn.commit()
 
     def get_last_prediction(self, user_id):
         """Получаем последнее предсказание и дату."""
-        today = datetime.now().date().isoformat()
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT image_path, prediction_date FROM predictions WHERE user_id = ? AND prediction_date = ?
-            ''', (user_id, today))
+                SELECT image_path, prediction_date FROM predictions WHERE user_id = ? ORDER BY id DESC LIMIT 1
+            ''', (user_id,))
             last_prediction = cursor.fetchone()
             return last_prediction  # Возвращает кортеж (image_path, prediction_date) или None
+

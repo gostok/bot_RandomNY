@@ -60,17 +60,13 @@ async def handle_meme_request(user_id, message):
                 await bot.delete_message(user_id, message_id=processing_message.message_id)
 
             await send_saved_image(user_id, image_path)
-            db.update_last_prediction(user_id, image_path)  # Убедитесь, что этот метод работает
+            db.update_last_prediction(user_id, image_path)  # Обновляем предсказание только если его еще не было
             logging.info(f"Изображение сохранено для пользователя {user_id}: {image_path}")
         else:
-            # Проверяем, если last_prediction - это кортеж
-            if isinstance(last_prediction, tuple):
-                last_prediction = last_prediction[0]  # Измените это в зависимости от структуры вашего кортежа
-
+            # Отправляем последнее предсказание
             await send_saved_image(user_id, last_prediction)
     else:
         logging.info('Ошибка отправки рандом сообщения: пользователь не найден.')
-
 
 
 @random_router.message(Command('meme'))  # Обработчик для команды /meme

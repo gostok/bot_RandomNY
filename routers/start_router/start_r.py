@@ -8,7 +8,7 @@ from routers.reg_router.reg_keyboards import reg_kb
 from routers.reg_router.reg_r import RegState
 from routers.random_router.random_keyboards import message_random
 from database.db import UserDatabase
-from config.create_bot import bot, CHAT_ADMIN
+from config.create_bot import bot, CHAT_ADMIN, ADMIN
 from config.booking import start_msg, admin_msg
 
 start_router = Router()
@@ -18,6 +18,10 @@ db = UserDatabase()
 
 class AdPost(StatesGroup):
     awaiting_ad_photo_state = State()
+
+
+def is_admin(user_id):
+    return user_id == int(CHAT_ADMIN) or user_id == int(ADMIN)  # Проверяем, является ли пользователь администратором
 
 
 @start_router.message(CommandStart())
@@ -36,7 +40,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 @start_router.message(Command('admin'))
 async def cmd_start_uc(message: types.Message):
     user = message.from_user.id
-    if user != int(CHAT_ADMIN):
+    if not is_admin(user):
         await message.answer("Эта команда доступна только для администратора.")
         return
     await message.answer(admin_msg)
@@ -45,7 +49,7 @@ async def cmd_start_uc(message: types.Message):
 @start_router.message(Command('user_count'))
 async def cmd_start_uc(message: types.Message):
     user = message.from_user.id
-    if user != int(CHAT_ADMIN):
+    if not is_admin(user):
         await message.answer("Эта команда доступна только для администратора.")
         return
 
@@ -56,7 +60,7 @@ async def cmd_start_uc(message: types.Message):
 @start_router.message(Command('ad_post'))
 async def cmd_ad_post(message: types.Message, state: FSMContext):
     user = message.from_user.id
-    if user != int(CHAT_ADMIN):
+    if not is_admin(user):
         await message.answer("Эта команда доступна только для администратора.")
         return
 
