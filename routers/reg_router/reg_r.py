@@ -47,7 +47,7 @@ async def reg_dob_cmd(message: types.Message, state: FSMContext):
         # Проверка формата даты
         datetime.strptime(date_of_birth, '%d.%m.%Y')  # Проверяем, что дата в правильном формате
         db.add_user(user_id=user_id, birth_date=date_of_birth)
-        await message.answer(f"Привет, @{message.from_user.username}.", reply_markup=message_random())
+        await message.answer(f"Ого, кажется, именно тебе повезет в этом году 😉", reply_markup=message_random())
         await state.clear()
     except ValueError:
         await message.answer('Неверный формат даты. Пожалуйста, используйте формат ДД.ММ.ГГГГ.')
