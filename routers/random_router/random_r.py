@@ -25,7 +25,7 @@ async def send_saved_image(user_id, image_path):
     logging.info(f"Переданный путь к изображению: {image_path}")  # Отладочное сообщение
     if os.path.exists(image_path):
         photo = FSInputFile(image_path)
-        await bot.send_photo(user_id, photo, caption='Ваш вайб на 2025 год')
+        await bot.send_photo(user_id, photo, caption='Твой вайб на 2025 🪄✨')
     else:
         logging.warning(f"Изображение по пути {image_path} не найдено.")
 

@@ -31,7 +31,7 @@ async def reg_cmd(callback: types.CallbackQuery, state: FSMContext):
 
         if chat_member.status in ['member', 'administrator', 'creator']:
             await callback.message.answer(
-                'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее! ')
+                'Теперь введи свою дату рождения (например, 03.10.1995), чтобы узнать будущее 🔮')
             await state.set_state(RegState.date_of_birth_state)
         else:
             await callback.message.answer("Пожалуйста, подпишитесь на канал, чтобы продолжить.")

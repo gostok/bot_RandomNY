@@ -30,7 +30,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user = db.get_user(user_id=user_id)
     if user is not None:
-        await message.answer(f"Привет, @{message.from_user.username}.\n"
+        await message.answer(f"Ого, кажется, именно тебе повезет в этом году 😉\n"
                              , reply_markup=message_random())
     else:
         await message.answer(start_msg, reply_markup=reg_kb())
