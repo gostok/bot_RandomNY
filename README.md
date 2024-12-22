@@ -1,6 +1,6 @@
 # Телеграм бот рандомных Новогодних предсказаний
 
-### https://t.me/cityparkgrad_meme_bot
+### https://t.me/grad_meme_bot
 
 ## Описание:
 
